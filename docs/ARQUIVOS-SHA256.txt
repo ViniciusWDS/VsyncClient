@@ -1,0 +1,3 @@
+e9b9dcf7260461d132bc64a20a00a76432e868be22e162a22481331ebec9effa  release/Vsync-Client-Setup-0.1.3.exe
+3f64610b5193cd6e6d7dbd9b463ea3baac82a2103c080fff88e9afa441d69af3  release/windows-x64.json
+6caada8516113eddf8774b8845d35cd2af99e7d4368d06a3ce19d5af1acd17a0  module-artifacts/vsync-hud-0.1.0.jar

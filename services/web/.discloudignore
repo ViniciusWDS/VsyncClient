@@ -1,0 +1,9 @@
+node_modules
+test
+*.log
+test-results
+.git
+.env
+*.pem
+*.key
+*.pfx

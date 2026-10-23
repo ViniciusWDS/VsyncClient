@@ -1,0 +1,13 @@
+{
+  "microsoftClientId": "f7b6c5c1-faef-4332-82d9-82c13e9d8446",
+  "updates": {
+    "manifestUrl": "https://github.com/ViniciusWDS/VsyncClient/releases/latest/download/windows-x64.json",
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAWxkt5kbHNh8m3ofKz68S7zEVcJO4RiWg0WTVKb4nb6I=\n-----END PUBLIC KEY-----\n",
+    "allowedHosts": [
+      "github.com",
+      "release-assets.githubusercontent.com",
+      "objects.githubusercontent.com"
+    ]
+  },
+  "discordClientId": "1275158550552903790"
+}

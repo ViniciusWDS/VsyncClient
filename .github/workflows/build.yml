@@ -1,0 +1,117 @@
+name: Build and release Vsync Client
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - package.json
+      - package-lock.json
+
+permissions:
+  contents: read
+
+# Um único publicador por repositório, mesmo entre main, tags e execução manual.
+concurrency:
+  group: vsync-stable-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.release.outputs.publish }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Auditar fonte do índice Git antes de configurar o build
+        run: node scripts/check-publication.mjs
+      - name: Validar versão, tag e histórico de releases
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/release-check.mjs
+
+  windows:
+    needs: prepare
+    if: needs.prepare.outputs.publish == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Dependências
+        run: npm ci
+      - name: Configurar canal oficial do GitHub
+        env:
+          VSYNC_UPDATE_PUBLIC_KEY: ${{ vars.VSYNC_UPDATE_PUBLIC_KEY }}
+        run: node scripts/configure-updates.mjs
+      - name: Validar chave de assinatura antes do build
+        env:
+          VSYNC_UPDATE_PRIVATE_KEY: ${{ secrets.VSYNC_UPDATE_PRIVATE_KEY }}
+        run: npm run release:manifest -- --check
+      - name: Testes
+        run: npm test
+      - name: Navegador de teste
+        run: npx playwright install chromium
+      - name: Interface
+        run: npm run test:ui
+      - name: Site e downloads
+        run: npm run test:site
+      - name: Interface do site
+        run: npm run test:site:ui
+      - name: Módulo
+        run: npm run compile:module
+      - name: Instalador
+        run: npm run dist:win
+      - name: Instalar, abrir, reiniciar e desinstalar no Windows
+        shell: powershell
+        run: ./scripts/test-windows.ps1 -DisposableWindowsEnvironment
+      - name: Assinar manifesto da atualização
+        shell: pwsh
+        env:
+          VSYNC_UPDATE_PRIVATE_KEY: ${{ secrets.VSYNC_UPDATE_PRIVATE_KEY }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $installer = "Vsync-Client-Setup-$version.exe"
+          $url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/v$version/$installer"
+          npm run release:manifest -- "release/$installer" "$url"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Guardar instalador e manifesto públicos
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vsync-Client-Windows-${{ needs.prepare.outputs.version }}
+          path: |
+            release/Vsync-Client-Setup-*.exe
+            release/windows-x64.json
+            module-artifacts/*.jar
+          if-no-files-found: error
+      - name: Publicar release com arquivos completos
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node --import tsx scripts/publish-release.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Vsync-Validacao-Windows-${{ needs.prepare.outputs.version }}
+          path: test-results/windows
+          if-no-files-found: warn

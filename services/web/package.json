@@ -1,0 +1,9 @@
+{
+  "name": "vsync-website",
+  "version": "0.1.2",
+  "private": true,
+  "type": "module",
+  "description": "Site, downloads e distribuição de atualizações do Vsync Client.",
+  "engines": {"node": ">=22"},
+  "scripts": {"start": "node server.mjs", "test": "node --test test/*.test.mjs"}
+}

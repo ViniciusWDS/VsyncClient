@@ -1,0 +1,8 @@
+{
+ "schemaVersion":1,"id":"vsync-hud","version":"${version}","name":"Vsync HUD",
+ "description":"HUD e recursos de interface do Vsync Client. Sem alteração de alcance, mira automática ou combate.",
+ "authors":["Vsync"],"license":"MIT","environment":"client",
+ "entrypoints":{"client":["com.vsync.hud.VsyncClient"]},
+ "mixins":["vsync.mixins.json"],
+ "depends":{"fabricloader":">=0.16.0","minecraft":"~1.21.1","java":">=21","fabric-api":"*"}
+}

@@ -1,0 +1,1 @@
+O build do módulo gera vsync-hud-0.1.0.jar aqui. Rode npm run compile:module com JDK 21 e Gradle 8.14.3, ou execute o workflow de build incluído. O launcher só oferece instalar o módulo quando esse JAR está presente. Fabric API também é necessário e é resolvido pelo catálogo.
